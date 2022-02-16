@@ -1,27 +1,42 @@
 #include <Adafruit_MPU6050.h>
 #include <bluefruit.h>
 #include "BluefruitConfig.h"
+#include "GestureManager.h"
+#include "ButtonManager.h"
 
 const int MOVE_SCALE = 50;
 const int SENSITIVITY_POT = A5;
-const int INDEX_BUTTON = 11;
-const int MIDDLE_BUTTON = 7;
-const int RING_BUTTON = 15;
-const int PINKY_BUTTON = 16;
+const int INDEX_BUTTON = 27;
+const int MIDDLE_BUTTON = 30;
+const int RING_BUTTON = 11;
+const int PINKY_BUTTON = 7;
+const int UTIL_BUTTON_1 = 15;
+const int UTIL_BUTTON_2 = 16;
 
-bool indexPrevState = false;
-bool middlePrevState = false;
-bool ringPrevState = false;
-bool pinkyPrevState = false;
+bool leftPressed = false;
+bool middlePressed = false;
+bool rightPressed = false;
+bool frontPressed = false;
+bool backPressed = false;
 
 unsigned long prevTime = 0;
+unsigned long lastAdvertiseStart = 0;
 
 int moveSensitivity = 0;
 
 BLEDis bledis;
 BLEHidAdafruit blehid;
 Adafruit_MPU6050 mpu;
-
+GestureManager gMan (
+  blehid,
+  mpu,
+  (int) INDEX_BUTTON,
+  (int) MIDDLE_BUTTON,
+  (int) RING_BUTTON,
+  (int) PINKY_BUTTON
+);
+Button utilB1(UTIL_BUTTON_1);
+Button utilB2(UTIL_BUTTON_2);
 
 void startAdv(void)
 {  
@@ -44,10 +59,7 @@ void setup()
 {
     // setup input buttons/devices
     pinMode(SENSITIVITY_POT, INPUT);
-    pinMode(INDEX_BUTTON, INPUT);
-    pinMode(MIDDLE_BUTTON, INPUT);
-    pinMode(RING_BUTTON, INPUT);
-    pinMode(PINKY_BUTTON, INPUT);
+    utilB1.setOnPress([]() { Serial.println("B1");});
     
     if (SERIAL_DEBUG) 
     {
@@ -122,52 +134,58 @@ void setup()
 
 void loop() 
 {    
-    moveSensitivity = map(analogRead(SENSITIVITY_POT), 1023, 0, 0, MOVE_SCALE);
+    moveSensitivity = map(analogRead(SENSITIVITY_POT), 1023, 0, 0, SENSITIVITY_MAX);
+    gMan.setSensitivity(moveSensitivity);
     sensors_event_t a, g, t;
     mpu.getEvent(&a, &g, &t);
+
+    double aX = a.acceleration.x;
+    utilB1.check();
+    utilB2.check();
     
     if (Serial.available())
     {
-//        Serial.println(Bluefruit.connected());
         char ch = (char) Serial.read();
+        int xDiff = 0;
+        int yDiff = 0;
         switch(ch)
         {
         // WASD to move the mouse
         case 'W':
-            blehid.mouseMove(0, -moveSensitivity);
+            yDiff = -moveSensitivity;
             break;
   
         case 'A':
-            blehid.mouseMove(-moveSensitivity, 0);
+            xDiff = -moveSensitivity;
             break;
   
         case 'S':
-            blehid.mouseMove(0, moveSensitivity);
+            yDiff = moveSensitivity;
             break;
   
         case 'D':
-            blehid.mouseMove(moveSensitivity, 0);
+            xDiff = moveSensitivity;
             break;
   
         // LRMBF for mouse button(s)
         case 'L':
-            blehid.mouseButtonPress(MOUSE_BUTTON_LEFT);
+            leftPressed = !leftPressed;
             break;
   
         case 'R':
-            blehid.mouseButtonPress(MOUSE_BUTTON_RIGHT);
+            rightPressed = !rightPressed;
             break;
   
         case 'M':
-            blehid.mouseButtonPress(MOUSE_BUTTON_MIDDLE);
+            middlePressed = !middlePressed;
             break;
   
         case 'B':
-            blehid.mouseButtonPress(MOUSE_BUTTON_BACKWARD);
+            backPressed = !backPressed;
             break;
   
         case 'F':
-            blehid.mouseButtonPress(MOUSE_BUTTON_FORWARD);
+            frontPressed = !frontPressed;
             break;
   
         case 'X':
@@ -177,6 +195,9 @@ void loop()
        default: 
             break;
        }
+       
+        uint8_t buttonBin = leftPressed * MOUSE_BUTTON_LEFT + rightPressed * MOUSE_BUTTON_RIGHT + middlePressed * MOUSE_BUTTON_MIDDLE;
+        blehid.mouseReport(buttonBin, xDiff, yDiff);
     }
     prevTime = millis();
 }
