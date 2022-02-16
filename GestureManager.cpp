@@ -2,44 +2,42 @@
 
 GestureManager::GestureManager(BLEHidAdafruit BLEhid, Adafruit_MPU6050 mpu6050, int button1Pin, int button2Pin, int button3Pin, int enableScrollPin)
 {
-    this -> hid = BLEhid;
-    this -> mpu = mpu6050;
-    this -> sensitivity = SENSITIVITY_MAX/2;
-    this -> b1 = button1Pin;
-    this -> b2 = button2Pin;
-    this -> b3 = button3Pin;
-    this -> scroll = enableScrollPin;
+    this->hid = BLEhid;
+    this->mpu = mpu6050;
+    this->sensitivity = SENSITIVITY_MAX/2;
+    this->b1 = new Button(button1Pin);
+    this->b2 = new Button(button2Pin);
+    this->b3 = new Button(button3Pin);
+    this->bScroll = new Button(enableScrollPin);
 
-    pinMode(this->b1, INPUT);
-    pinMode(this->b2, INPUT);
-    pinMode(this->b3, INPUT);
-    pinMode(this->scroll, INPUT);
 }
-
+GestureManager::~GestureManager()
+{
+    delete this->b1;
+    delete this->b2;
+    delete this->b3;
+    delete this->bScroll;
+}
 
 void GestureManager::update(void)
 {
     
-    boolean b1State = digitalRead(this->b1);
-    boolean b2State = digitalRead(this->b2);
-    boolean b3State = digitalRead(this->b3);
-    boolean scrollState = digitalRead(this->scroll);
+    boolean b1State = this->b1->pressed();
+    boolean b2State = this->b2->pressed();
+    boolean b3State = this->b3->pressed();
+    boolean scrollState = this->bScroll->pressed();
     uint8_t buttonReport = b1State * MOUSE_BUTTON_LEFT + b2State + MOUSE_BUTTON_RIGHT + b3State * MOUSE_BUTTON_MIDDLE;
 
     int xChange = 0;
     int yChange = 0;
 
-    this -> hid.mouseReport(buttonReport, xChange, yChange);
-    this -> prevB1 = b1State;
-    this -> prevB2 = b2State;
-    this -> prevB3 = b3State;
-    this -> prevScroll = scrollState;
-    this -> lastUpdateTime = millis();
+    this->hid.mouseReport(buttonReport, xChange, yChange);
+    this->lastUpdateTime = millis();
 }
 
 void GestureManager::setSensitivity(int sensitivity)
 {
-    this -> sensitivity = constrain(sensitivity, 0, SENSITIVITY_MAX);
+    this->sensitivity = constrain(sensitivity, 0, SENSITIVITY_MAX);
 }
 int GestureManager::getSensitivity(void)
 {

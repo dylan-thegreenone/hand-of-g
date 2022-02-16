@@ -49,6 +49,9 @@ void Button::check(void)
 }
 boolean Button::pressed(void)
 {
-    return this->prevState
+    return this->prevState;
 }
-int getPin
+int Button::getPin(void)
+{
+    return this->pin;
+}
