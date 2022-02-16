@@ -38,12 +38,16 @@ void Button::check(void)
 {
     boolean state = digitalRead(this->pin) ^ this->pullup;
 
-    if (state == prevState) return;
+    if (state == this->prevState) return;
     
     if (this->onChangeSet) this->onChange();
 
     if (state && onPressSet) this->onPress();
     else if (onReleaseSet) this->onRelease();
     
-    prevState = state;
+    this->prevState = state;
+}
+boolean Button::pressed()
+{
+    return this->prevState
 }
