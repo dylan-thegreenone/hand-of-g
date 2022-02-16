@@ -6,7 +6,9 @@ Entirely self contained, only requires a computer to connect via Bluetooth (also
 
 # Hardware
 Adafruit Feather nrf512832
+
 MPU6050 combined Gyroscope Accelerometer Temperature sensor
+
 3.7 1s Lipo (Feather has built in charge circuit)
 
 
