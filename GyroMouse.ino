@@ -59,8 +59,6 @@ void setup()
 {
     // setup input buttons/devices
     pinMode(SENSITIVITY_POT, INPUT);
-    utilB1.setOnPress([]() { Serial.println("B1");});
-    utilB2.setOnPress([]() { Serial.println("B2");});
     
     if (SERIAL_DEBUG) 
     {

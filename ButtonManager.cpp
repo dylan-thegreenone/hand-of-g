@@ -47,7 +47,8 @@ void Button::check(void)
     
     this->prevState = state;
 }
-boolean Button::pressed()
+boolean Button::pressed(void)
 {
     return this->prevState
 }
+int getPin

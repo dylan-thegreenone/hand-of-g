@@ -21,7 +21,8 @@ class Button {
         void check(void);
         void suspend(void);
         void resume(void);
-        boolean pressed();
+        boolean pressed(void);
+        int getPin(void);
 };
 
 #endif
