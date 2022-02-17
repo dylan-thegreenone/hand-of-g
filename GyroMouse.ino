@@ -1,5 +1,6 @@
 #include <Adafruit_MPU6050.h>
 #include <bluefruit.h>
+#include <LED.h>
 #include "BluefruitConfig.h"
 #include "GestureManager.h"
 #include "ButtonManager.h"
@@ -12,17 +13,18 @@ const int RING_BUTTON = 11;
 const int PINKY_BUTTON = 7;
 const int UTIL_BUTTON_1 = 15;
 const int UTIL_BUTTON_2 = 16;
+const int STATUS_LED_RED = A3;
+const int STATUS_LED_GREEN = A2;
 
-bool leftPressed = false;
-bool middlePressed = false;
-bool rightPressed = false;
-bool frontPressed = false;
-bool backPressed = false;
+bool leftPressed,  rightPressed, middlePressed, backPressed, frontPressed;
 
 unsigned long prevTime = 0;
 unsigned long lastAdvertiseStart = 0;
 
 int moveSensitivity = 0;
+
+LED greenLED(STATUS_LED_GREEN);
+LED redLED(STATUS_LED_RED);
 
 BLEDis bledis;
 BLEHidAdafruit blehid;
@@ -38,8 +40,22 @@ GestureManager gMan (
 Button utilB1(UTIL_BUTTON_1);
 Button utilB2(UTIL_BUTTON_2);
 
-void startAdv(void)
+void disconnectAndStartAdv(void)
 {  
+    if (Bluefruit.connected() > 0)
+    {
+        Bluefruit.disconnect(0);
+    }
+    if (!Bluefruit.Advertising.isRunning() || millis() - lastAdvertiseStart > ADVERTISING_TIMEOUT * 1000)
+    {
+        Bluefruit.Advertising.start(ADVERTISING_TIMEOUT);
+        lastAdvertiseStart = millis();
+    }
+}
+
+// Must be run once before advertise is started
+void setupAdv(void)
+{
     // Advertising packet
     Bluefruit.Advertising.addFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
     Bluefruit.Advertising.addTxPower();
@@ -52,14 +68,28 @@ void startAdv(void)
     Bluefruit.Advertising.restartOnDisconnect(AUTO_RESTART_ADVERTISING);
     Bluefruit.Advertising.setInterval(ADVERTISING_INTERVAL_MIN, ADVERTISING_INTERVAL_MAX);    // in unit of 0.625 ms
     Bluefruit.Advertising.setFastTimeout(FAST_MODE_TIMEOUT);      // number of seconds in fast mode
-    Bluefruit.Advertising.start(ADVERTISING_TIMEOUT);
 }
 
+// if crucial component fails, prevent running further
+// AKA feather freak out
+void panic(const char* message)
+{
+    if (SERIAL_DEBUG)
+    {
+        Serial.println(message);
+    }
+    redLED.blink(0, 500);
+    greenLED.blink(0, 250);
+    while (1) delay(100);
+}
 void setup() 
 {
     // setup input buttons/devices
     pinMode(SENSITIVITY_POT, INPUT);
-    
+    redLED.begin(2000);
+    redLED.begin(2000);
+
+
     if (SERIAL_DEBUG) 
     {
         Serial.begin(SERIAL_BAUD);
@@ -83,7 +113,8 @@ void setup()
     Bluefruit.Periph.setConnInterval(CONN_INTERVAL_MIN, CONN_INTERVAL_MAX); // min = 9*1.25=11.25 ms, max = 16*1.25=20ms
     Bluefruit.setTxPower(4);   
     
-    
+    setupAdv();
+        
     // Configure and Start Device Information Service
     bledis.setManufacturer(DEVICE_MANUFACTURER);
     bledis.setModel(DEVICE_MODEL);
@@ -92,27 +123,15 @@ void setup()
 
     if (bledis.begin()) 
     {
-        if (SERIAL_DEBUG)
-        {
-            Serial.println("Could not start BLE device information service");
-        }
-        while (1) delay(100);   //Necessary component, just accept futility if it fails
+        panic("Could not start BLE device information service");
     }
     if (blehid.begin()) 
     {
-        if (SERIAL_DEBUG)
-        {
-            Serial.println("Could not start BLE HID service");
-        }
-        while (1) delay(100);   //Necessary component, just accept futility if it fails
+        panic("Could not start BLE HID service");
     }
     if (!mpu.begin()) 
     {
-        if (SERIAL_DEBUG)
-        {
-            Serial.println("Could not find MPU6050 component");
-        }
-        // while (1) delay(100);   //Necessary component, just accept futility if it fails
+        panic("Could not find MPU6050 acceleromoter/gyroscope component");
     }
     mpu.setAccelerometerRange(MPU6050_RANGE_4_G);
     mpu.setGyroRange(MPU6050_RANGE_500_DEG);
@@ -122,12 +141,16 @@ void setup()
     {
         Serial.println("All components started");
     }
-   
-    startAdv();
+     
+    disconnectAndStartAdv();
     if (SERIAL_DEBUG)
     {
         Serial.println("BLE Advertising started");
     }
+
+    utilB1.setOnPress(disconnectAndStartAdv);
+
+
     prevTime = millis();
 }
 
@@ -138,9 +161,10 @@ void loop()
     sensors_event_t a, g, t;
     mpu.getEvent(&a, &g, &t);
 
-    double aX = a.acceleration.x;
+    // double aX = a.acceleration.x;
     utilB1.check();
     utilB2.check();
+    gMan.refresh();
     
     if (Serial.available())
     {
@@ -196,7 +220,7 @@ void loop()
        }
        
         uint8_t buttonBin = leftPressed * MOUSE_BUTTON_LEFT + rightPressed * MOUSE_BUTTON_RIGHT + middlePressed * MOUSE_BUTTON_MIDDLE;
-        blehid.mouseReport(buttonBin, xDiff, yDiff);
+        // blehid.mouseReport(buttonBin, xDiff, yDiff);
     }
     prevTime = millis();
 }

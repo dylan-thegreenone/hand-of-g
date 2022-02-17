@@ -9,6 +9,10 @@ GestureManager::GestureManager(BLEHidAdafruit BLEhid, Adafruit_MPU6050 mpu6050, 
     this->b2 = new Button(button2Pin);
     this->b3 = new Button(button3Pin);
     this->bScroll = new Button(enableScrollPin);
+//    this->b1->setOnPress([]() { Serial.println("mouse1");});
+//    this->b2->setOnPress([]() { Serial.println("mouse2");});
+//    this->b3->setOnPress([]() { Serial.println("mouse3");});
+//    this->bScroll->setOnPress([]() { Serial.println("mouseS");});
 
 }
 GestureManager::~GestureManager()
@@ -19,9 +23,12 @@ GestureManager::~GestureManager()
     delete this->bScroll;
 }
 
-void GestureManager::update(void)
+void GestureManager::refresh(void)
 {
-    
+    this->b1->check();
+    this->b2->check();
+    this->b3->check();
+    this->bScroll->check();
     boolean b1State = this->b1->pressed();
     boolean b2State = this->b2->pressed();
     boolean b3State = this->b3->pressed();

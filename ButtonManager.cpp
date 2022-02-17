@@ -38,7 +38,7 @@ void Button::check(void)
 {
     boolean state = digitalRead(this->pin) ^ this->pullup;
 
-    if (state == this->prevState) return;
+    if (state == this->prevState || this->suspended) return;
     
     if (this->onChangeSet) this->onChange();
 

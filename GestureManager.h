@@ -39,7 +39,7 @@ class GestureManager
     public:
         GestureManager(BLEHidAdafruit BLEhid, Adafruit_MPU6050 mpu6050, int button1Pin, int button2Pin, int button3Pin, int enableScrollPin);
         ~GestureManager();
-        void update(void);
+        void refresh(void);
         void setSensitivity(int sensitivity);
         int getSensitivity(void);
    
