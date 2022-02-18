@@ -8,19 +8,14 @@ GestureManager::GestureManager(BLEHidAdafruit BLEhid, Adafruit_MPU6050 mpu6050, 
     this->b1 = new Button(button1Pin);
     this->b2 = new Button(button2Pin);
     this->b3 = new Button(button3Pin);
-    this->bScroll = new Button(enableScrollPin);
-//    this->b1->setOnPress([]() { Serial.println("mouse1");});
-//    this->b2->setOnPress([]() { Serial.println("mouse2");});
-//    this->b3->setOnPress([]() { Serial.println("mouse3");});
-//    this->bScroll->setOnPress([]() { Serial.println("mouseS");});
-
+    this->b4 = new Button(enableScrollPin);
 }
 GestureManager::~GestureManager()
 {
     delete this->b1;
     delete this->b2;
     delete this->b3;
-    delete this->bScroll;
+    delete this->b4;
 }
 
 void GestureManager::refresh(void)
@@ -28,12 +23,32 @@ void GestureManager::refresh(void)
     this->b1->check();
     this->b2->check();
     this->b3->check();
-    this->bScroll->check();
+    this->b4->check();
     boolean b1State = this->b1->pressed();
     boolean b2State = this->b2->pressed();
     boolean b3State = this->b3->pressed();
-    boolean scrollState = this->bScroll->pressed();
+    boolean b4State = this->b4->pressed();
     uint8_t buttonReport = b1State * MOUSE_BUTTON_LEFT + b2State + MOUSE_BUTTON_RIGHT + b3State * MOUSE_BUTTON_MIDDLE;
+
+    sensors_event_t a, g, t;
+    this->mpu.getEvent(&a, &g, &t);
+    
+    // Gyroscope movements (rotation)
+    // +x -> tilt back
+    // -x -> tilt forward
+    // +y -> tilt right
+    // -y -> tilt left
+    // +z -> spin CCW
+    // -z -> spin CW
+
+    // Accelerometer movements (linear motion)
+    // +x -> right
+    // -x -> left
+    // +y -> forward
+    // -y -> backward
+    // +z -> up
+    // -z -> down
+
 
     int xChange = 0;
     int yChange = 0;

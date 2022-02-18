@@ -3,7 +3,7 @@
 #define DEVICE_MANUFACTURER "Professor D Glizzy"
 #define DEVICE_MODEL "Hand enhancer v69"
 
-#define PASSCODE_ENABLED true
+#define PASSCODE_ENABLED false
 #define PASSCODE "12345678"
 
 // make Feather pairable as soon as current connection is lost
@@ -13,7 +13,7 @@
 #define ADVERTISING_TIMEOUT 0
 
 #define SERIAL_DEBUG true
-#define SERIAL_BAUD 115200
+#define SERIAL_BAUD 9600
 
 
 // interval * 1.25 = interval in ms

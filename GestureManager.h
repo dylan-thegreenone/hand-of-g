@@ -25,7 +25,7 @@ class GestureManager
         Button* b1;
         Button* b2;
         Button* b3;
-        Button* bScroll;
+        Button* b4;
 
         double lastXAccel = 0.0;
         double lastYAccel = 0.0;
