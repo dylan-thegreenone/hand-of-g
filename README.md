@@ -20,3 +20,6 @@ https://learn.adafruit.com/bluefruit-nrf52-feather-learning-guide/bluefruit-nrf5
 
 Adafruit MPU6050 library
 https://adafruit.github.io/Adafruit_MPU6050/html/class_adafruit___m_p_u6050.html
+
+HID over GATT profile reference for BLE 
+https://www.ti.com/lit/an/swra715/swra715.pdf?ts=1644949603328
