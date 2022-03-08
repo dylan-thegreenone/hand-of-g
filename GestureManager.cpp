@@ -32,6 +32,21 @@ void GestureManager::refresh(void)
 
     sensors_event_t a, g, t;
     this->mpu.getEvent(&a, &g, &t);
+    double xAccel = a.acceleration.x;
+    double yAccel = a.acceleration.y;
+    double zAccel = a.acceleration.z;
+
+    double xRot = g.gyro.x;
+    double yRot = g.gyro.y;
+    double zRot = g.gyro.z;
+
+    double xAccelDiff = xAccel - lastXAccel;
+    double yAccelDiff = yAccel - lastYAccel;
+    double zAccelDiff = zAccel - lastZAccel;
+
+    double xRotDiff = xRot - lastXRot;
+    double yRotDiff = yRot - lastYRot;
+    double zRotDiff = zRot - lastZRot;
     
     // Gyroscope movements (rotation)
     // +x -> tilt back
@@ -49,12 +64,20 @@ void GestureManager::refresh(void)
     // +z -> up
     // -z -> down
 
-
     int xChange = 0;
     int yChange = 0;
 
+    // TODO: some sort of motion to mouse movement translation wizardry     
+
     this->hid.mouseReport(buttonReport, xChange, yChange);
     this->lastUpdateTime = millis();
+
+    lastXAccel = xAccel;
+    lastYAccel = yAccel;
+    lastZAccel = zAccel;
+    lastXRot = xRot;
+    lastYRot = yRot;
+    lastZRot = zRot;
 }
 
 void GestureManager::setSensitivity(int sensitivity)

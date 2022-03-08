@@ -1,5 +1,5 @@
 // Bluefruit configuration header
-#define DEVICE_NAME "G-Hand Controller"
+#define DEVICE_NAME "Hand of G"
 #define DEVICE_MANUFACTURER "Professor D Glizzy"
 #define DEVICE_MODEL "Hand enhancer v69"
 
@@ -10,7 +10,7 @@
 #define AUTO_RESTART_ADVERTISING true
 
 // start with timeout = 0 will advertise forever (until connected)
-#define ADVERTISING_TIMEOUT 0
+#define ADVERTISING_TIMEOUT 30
 
 #define SERIAL_DEBUG true
 #define SERIAL_BAUD 9600
@@ -33,3 +33,5 @@
  * - Timeout for fast mode is 30 seconds
  * - Start(timeout) with timeout = 0 will advertise forever (until connected)
 */
+
+#define DEATH_ON_FAILURE true

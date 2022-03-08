@@ -28,11 +28,13 @@ void LED::toggle(void)
 {
     if (this->state)
     {
-        this->off();
+        this->state = 0;
+        digitalWrite(this->pin,LOW);
     }
     else
     {
-        this->on();
+        this->state = 1;
+        digitalWrite(this->pin,HIGH);
     }
 }
 void LED::blink(long interval, long stopAfter)
@@ -41,6 +43,7 @@ void LED::blink(long interval, long stopAfter)
     this->interval = interval;
     this->nextTriggerTime = millis() + interval;
     this->blinkStop = millis() + stopAfter;
+    this->mortalBlink = stopAfter > 0;
 }
 void LED::blink(long interval)
 {
@@ -54,14 +57,14 @@ void LED::refresh(void)
 {
     if (this->blinking)
     {
-        if (this->blinkStop != 0 && millis() >= this->blinkStop)
+        if (this->mortalBlink && millis() >= this->blinkStop)
         {
             this->off();
         }
         else if (millis() >= this->nextTriggerTime)
         {     
             this->toggle();
-            this->nextTriggerTime = millis() + interval;
+            this->nextTriggerTime = millis() + this->interval;
         }
     }
 }

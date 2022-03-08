@@ -8,6 +8,8 @@ Button::Button(int buttonPin, boolean pullup)
     this->onPressSet = false;
     this->onReleaseSet = false;
     this->onChangeSet = false;
+    this->onHoldSet = false;
+    this->holdStart = 0;
     pinMode(this->pin, pullup ? INPUT_PULLUP : INPUT);
 }
 Button::Button(int buttonPin) : Button::Button(buttonPin, false){}
@@ -26,6 +28,28 @@ void Button::setOnChange(void (*callback)(void))
     this->onChange = callback;
     this->onChangeSet = true;
 }
+void Button::setOnHold(void (*callback)(void), unsigned long holdMillis)
+{
+    this->onHold = callback;
+    this->holdDuration = holdMillis;
+    this->onHoldSet = true;
+}
+void Button::unSetOnPress(void)
+{
+    this->onPressSet = false;
+}
+void Button::unSetOnRelease(void)
+{
+    this->onReleaseSet = false;
+}
+void Button::unSetOnChange(void)
+{
+    this->onChangeSet = false;
+}
+void Button::unSetOnHold(void)
+{
+    this->onHoldSet = false;
+}
 void Button::suspend(void)
 {
     this->suspended = true;
@@ -38,13 +62,30 @@ void Button::check(void)
 {
     boolean state = digitalRead(this->pin) ^ this->pullup;
 
-    if (state == this->prevState || this->suspended) return;
+    if (this->suspended) return;
     
+    if (state == this->prevState)
+    {
+        if ( state && this->onHoldSet && millis() - this->holdStart >= this->holdDuration && !holdTriggered) 
+        {
+            this->holdTriggered = true;
+            this->onHold();
+        }
+        return;
+    }
     if (this->onChangeSet) this->onChange();
 
-    if (state && onPressSet) this->onPress();
-    else if (onReleaseSet) this->onRelease();
-    
+    if (state) //button pressed 
+    {
+        this->holdStart = millis();
+        if (this->onPressSet) this->onPress();
+    }
+    else //button released
+    {
+        if (!this->holdTriggered && this->onReleaseSet) this->onRelease();
+        
+        this->holdTriggered = false;
+    }
     this->prevState = state;
 }
 boolean Button::pressed(void)

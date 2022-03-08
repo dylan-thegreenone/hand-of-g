@@ -9,6 +9,7 @@ class LED
         unsigned long interval;
         unsigned long nextTriggerTime;
         unsigned long blinkStop;
+        boolean mortalBlink;
         boolean blinking;
         boolean state;
         int pin;

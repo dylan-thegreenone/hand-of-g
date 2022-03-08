@@ -5,8 +5,6 @@
 #include "ButtonManager.h"
 #include "LEDManager.h"
 
-#define DEATH_ON_FAILURE false
-
 const int MOVE_SCALE = 50;
 const int SENSITIVITY_POT = A5;
 const int INDEX_BUTTON = 27;
@@ -24,8 +22,9 @@ unsigned long prevTime = 0;
 unsigned long lastAdvertiseStart = 0;
 
 int moveSensitivity = 0;
+int ledStatus = 0;
 
-LED greenLED(STATUS_LED_GREEN);
+//LED greenLED(STATUS_LED_GREEN);
 LED redLED(STATUS_LED_RED);
 
 BLEDis bledis;
@@ -46,32 +45,36 @@ Button utilB2(UTIL_BUTTON_2);
 
 void updateLEDStatus(void)
 {
-    if (Bluefruit.connected() > 0)
+    if (Bluefruit.connected() > 0 && ledStatus != 1)
     {
+        ledStatus = 1;
         redLED.on();
     }
-    else if (Bluefruit.Advertising.isRunning())
+    else if (Bluefruit.Advertising.isRunning() && ledStatus != 2)
     {
         redLED.blink(250, ADVERTISING_TIMEOUT * 1000);
+        ledStatus = 2;
     }
-    else
+    else if (ledStatus != 3 && Bluefruit.connected() <= 0 && !Bluefruit.Advertising.isRunning())
     {
         redLED.off();
+        ledStatus = 3;
     }
 }
-
 void disconnectAndStartAdv(void)
 {  
     if (Bluefruit.connected() > 0)
     {
         Bluefruit.disconnect(0);
-        Bluefruit.Periph.clearBonds();
+        if (SERIAL_DEBUG) Serial.println("Disconnected");
     }
     if (!Bluefruit.Advertising.isRunning())
     {
         Bluefruit.Advertising.start(ADVERTISING_TIMEOUT);
+        redLED.blink(250, ADVERTISING_TIMEOUT * 1000);
+        if (SERIAL_DEBUG) Serial.println("Advertising started");
     }
-    updateLEDStatus();
+//    updateLEDStatus();
 }
 
 // Must be run once before advertise is started
@@ -81,7 +84,7 @@ void setupAdv(void)
     Bluefruit.Advertising.addFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
     Bluefruit.Advertising.addTxPower();
     Bluefruit.Advertising.addAppearance(BLE_APPEARANCE_HID_MOUSE);
-    
+
     // Include BLE HID service
     Bluefruit.Advertising.addService(blehid);
   
@@ -89,6 +92,9 @@ void setupAdv(void)
     Bluefruit.Advertising.restartOnDisconnect(AUTO_RESTART_ADVERTISING);
     Bluefruit.Advertising.setInterval(ADVERTISING_INTERVAL_MIN, ADVERTISING_INTERVAL_MAX);    // in unit of 0.625 ms
     Bluefruit.Advertising.setFastTimeout(FAST_MODE_TIMEOUT);      // number of seconds in fast mode
+    Bluefruit.Advertising.setStopCallback(updateLEDStatus);
+    
+//    Bluefruit.Periph.clearBonds();
 //    Bluefruit.Advertising.start(ADVERTISING_TIMEOUT);
 }
 
@@ -100,14 +106,13 @@ void panic(const char* message)
     {
         Serial.println(message);
     }
-    greenLED.blink(500);
+//    greenLED.blink(500);
     delay(250);
     redLED.blink(500);
     if (DEATH_ON_FAILURE) 
     {
         while (1) 
         {
-            greenLED.refresh();
             redLED.refresh();
             delay(10);
         }
@@ -121,7 +126,7 @@ void setup()
     if (SERIAL_DEBUG) 
     {
         Serial.begin(SERIAL_BAUD);
-        while ( !Serial ) delay(10);   // for nrf52840 with native usb
+        while ( !Serial ) delay(10);   // for nrf52840 with native usbm
         
         Serial.println("Enter following characters");
         Serial.println("- 'WASD'  to move mouse (up, left, down, right)");
@@ -133,9 +138,8 @@ void setup()
         Bluefruit.Security.setPIN(PASSCODE);
     }
     
+    Bluefruit.begin();
     Bluefruit.setName(DEVICE_NAME);
-    Bluefruit.begin(1,0);
-    
 //    Bluefruit.Periph.clearBonds();
     // HID Device can have a min connection interval of 9*1.25 = 11.25 ms
     Bluefruit.Periph.setConnInterval(CONN_INTERVAL_MIN, CONN_INTERVAL_MAX); // min = 9*1.25=11.25 ms, max = 16*1.25=20ms
@@ -146,6 +150,7 @@ void setup()
     // Configure and Start Device Information Service
     bledis.setManufacturer(DEVICE_MANUFACTURER);
     bledis.setModel(DEVICE_MODEL);
+    
 
     mpu.setAccelerometerRange(MPU6050_RANGE_8_G);
 
@@ -173,14 +178,18 @@ void setup()
         Serial.println("All components started");
     }
      
-    disconnectAndStartAdv();
+//    disconnectAndStartAdv();
     if (SERIAL_DEBUG && DEATH_ON_FAILURE)
     {
         Serial.println("BLE Advertising started");
     }
 
-    utilB1.setOnPress(disconnectAndStartAdv);
-
+    utilB1.setOnRelease(disconnectAndStartAdv);
+    utilB1.setOnHold([](){
+        if (SERIAL_DEBUG) Serial.println("Bonds cleared");
+        Bluefruit.Periph.clearBonds();
+        disconnectAndStartAdv();
+    }, 4000);
 
     prevTime = millis();
 }
@@ -195,9 +204,11 @@ void loop()
     // double aX = a.acceleration.x;
     utilB1.check();
     utilB2.check();
-    greenLED.refresh();
+//    greenLED.refresh();
     redLED.refresh();
     gMan.refresh();
+
+    updateLEDStatus();
 
     
     if (Serial.available())
