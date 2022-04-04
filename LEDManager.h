@@ -1,3 +1,10 @@
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// GPIO LED manager class that takes care of blink timings and patterns
+//
+// @author Dylan Greenberg
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
 #ifndef _LEDMANAGER_H_
 #define _LEDMANAGER_H_
 

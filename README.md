@@ -17,11 +17,8 @@ MPU6050 combined Gyroscope Accelerometer Temperature sensor
 # Resources
 Uses arduino compiler with DFU bootloader
 
-Adafruit nrf52 API 
-https://learn.adafruit.com/bluefruit-nrf52-feather-learning-guide/bluefruit-nrf52-api
+[Adafruit nrf52 API](https://learn.adafruit.com/bluefruit-nrf52-feather-learning-guide/bluefruit-nrf52-api)
 
-Adafruit MPU6050 library
-https://adafruit.github.io/Adafruit_MPU6050/html/class_adafruit___m_p_u6050.html
+[Adafruit MPU6050 library](https://adafruit.github.io/Adafruit_MPU6050/html/class_adafruit___m_p_u6050.html)
 
-HID over GATT profile reference for BLE 
-https://www.ti.com/lit/an/swra715/swra715.pdf?ts=1644949603328
+[HID over GATT profile reference for BLE](https://www.ti.com/lit/an/swra715/swra715.pdf?ts=1644949603328)

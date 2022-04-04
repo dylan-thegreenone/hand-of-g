@@ -1,3 +1,10 @@
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// Event and callback based button manager class for GPIO
+//
+// @author Dylan Greenberg
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
 #ifndef _BUTTONMANAGER_H_
 #define _BUTTONMANAGER_H_
 

@@ -1,3 +1,12 @@
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// Main program for the Hand of G gyroscope and accelerometer enabled, motion based mouse glove
+// loop is primarily for event updates, but still has serial test commands enabled
+// Connects over BLE like any other bluetooth mouse
+//
+// @author Dylan Greenberg
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
 #include <Adafruit_MPU6050.h>
 #include <bluefruit.h>
 #include "BluefruitConfig.h"

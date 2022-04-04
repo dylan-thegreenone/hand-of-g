@@ -1,3 +1,10 @@
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// Gesture manager class for motion based mouse glove
+// Uses Adafruit MPU6050 sensor and nrf52 Bluefruit HID 
+//
+// @author Dylan Greenberg
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 #ifndef _GESTUREMANAGER_H_
 #define _GESTUREMANAGER_H_
 
