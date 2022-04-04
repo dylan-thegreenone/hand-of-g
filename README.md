@@ -5,11 +5,13 @@ Motion control and BLE mouse simulation for gyroscope based mouse glove project 
 Entirely self contained, only requires a computer to connect via Bluetooth (also works on Android for some reason)
 
 # Hardware
-Adafruit Feather nrf512832
+Adafruit Feather nrf52832
 
 MPU6050 combined Gyroscope Accelerometer Temperature sensor
 
 3.7 1s Lipo (Feather has built in charge circuit)
+
+![glove-image](https://github.com/dylan-thegreenone/hand-of-g/blob/master/images/glove-image.jpg)
 
 
 # Resources
